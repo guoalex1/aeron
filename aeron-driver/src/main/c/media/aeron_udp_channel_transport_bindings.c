@@ -34,6 +34,9 @@
 #include "aeron_udp_channel_transport_bindings.h"
 #include "aeron_udp_channel_transport.h"
 #include "aeron_udp_transport_poller.h"
+#if defined(AERON_ENABLE_XDP)
+#include "aeron_udp_channel_transport_xdp.h"
+#endif
 
 aeron_udp_channel_transport_bindings_t aeron_udp_channel_transport_bindings_default =
     {
@@ -63,6 +66,13 @@ static const aeron_symbol_table_obj_t aeron_udp_channel_transport_bindings_table
             "aeron_udp_channel_transport_bindings_default",
             (void *)&aeron_udp_channel_transport_bindings_default
         },
+#if defined(AERON_ENABLE_XDP)
+        {
+            "xdp",
+            "aeron_udp_channel_transport_bindings_xdp",
+            (void *)&aeron_udp_channel_transport_bindings_xdp
+        },
+#endif
     };
 
 static const size_t aeron_udp_channel_transport_bindings_table_length =

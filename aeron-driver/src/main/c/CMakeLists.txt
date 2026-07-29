@@ -320,6 +320,14 @@ SET(DRIVER_ONLY_SOURCE
     aeron_termination_validator.c
     aeron_topology.c)
 
+option(AERON_ENABLE_XDP "Build the AF_XDP media transport binding" OFF)
+set(AERON_XDP_INCLUDE_DIR "$ENV{HOME}/xdp-socket/user" CACHE PATH "Directory containing xdp_socket.h")
+set(AERON_XDP_LIBRARY "$ENV{HOME}/xdp-socket/user/libxdp_socket.a" CACHE FILEPATH "Path to libxdp_socket")
+
+if (AERON_ENABLE_XDP)
+    list(APPEND DRIVER_ONLY_SOURCE media/aeron_udp_channel_transport_xdp.c)
+endif ()
+
 SET(SOURCE
     ${C_CLIENT_SOURCE}
     ${DRIVER_ONLY_SOURCE})
@@ -397,6 +405,14 @@ target_include_directories(aeronmd
 add_executable(aeronmd_s aeronmd.c)
 target_include_directories(aeronmd_s
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${AERON_C_CLIENT_SOURCE_PATH})
+
+if (AERON_ENABLE_XDP)
+    foreach (xdp_target aeron_driver aeron_driver_static)
+        target_compile_definitions(${xdp_target} PRIVATE AERON_ENABLE_XDP)
+        target_include_directories(${xdp_target} PRIVATE ${AERON_XDP_INCLUDE_DIR})
+        target_link_libraries(${xdp_target} ${AERON_XDP_LIBRARY} xdp bpf)
+    endforeach ()
+endif ()
 
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DDISABLE_BOUNDS_CHECKS")
 
