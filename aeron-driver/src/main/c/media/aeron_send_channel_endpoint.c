@@ -128,6 +128,7 @@ int aeron_send_channel_endpoint_create(
         channel->interface_index,
         0 != channel->multicast_ttl ? channel->multicast_ttl : context->multicast_ttl,
         false,
+        &channel->uri.params.udp.additional_params,
     };
 
     if (context->udp_channel_transport_bindings->init_func(

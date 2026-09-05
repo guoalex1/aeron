@@ -64,6 +64,7 @@ int aeron_receive_destination_create(
         destination_channel->interface_index,
         0 != destination_channel->multicast_ttl ? destination_channel->multicast_ttl : context->multicast_ttl,
         is_media_timestamping,
+        &destination_channel->uri.params.udp.additional_params,
     };
 
     if (context->udp_channel_transport_bindings->init_func(

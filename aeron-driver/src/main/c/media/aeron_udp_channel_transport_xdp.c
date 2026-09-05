@@ -46,6 +46,7 @@
 #define AERON_XDP_FRAME_SIZE (4096)
 #define AERON_XDP_QUEUE_DEFAULT (0)
 #define AERON_XDP_QUEUE_LENGTH_DEFAULT (2048)
+#define AERON_XDP_QUEUE_URI_PARAM_KEY "xdp-queue"
 
 #if !defined(HAVE_STRUCT_MMSGHDR)
 struct mmsghdr
@@ -184,6 +185,23 @@ int aeron_udp_channel_transport_xdp_init(
     xdp_config.queue = aeron_udp_channel_transport_xdp_env_uint32("AERON_XDP_QUEUE", AERON_XDP_QUEUE_DEFAULT);
     xdp_config.queue_length = aeron_udp_channel_transport_xdp_env_uint32(
         "AERON_XDP_QUEUE_LENGTH", AERON_XDP_QUEUE_LENGTH_DEFAULT);
+
+    if (NULL != params->additional_params)
+    {
+        const char *queue_str = aeron_uri_find_param_value(params->additional_params, AERON_XDP_QUEUE_URI_PARAM_KEY);
+        if (NULL != queue_str)
+        {
+            char *end_ptr = NULL;
+            errno = 0;
+            const long queue = strtol(queue_str, &end_ptr, 0);
+            if (0 != errno || end_ptr == queue_str || '\0' != *end_ptr || queue < 0)
+            {
+                AERON_SET_ERR(EINVAL, "invalid %s: %s", AERON_XDP_QUEUE_URI_PARAM_KEY, queue_str);
+                goto error;
+            }
+            xdp_config.queue = (uint32_t)queue;
+        }
+    }
 
     if ((transport->fd = xdp_socket(bind_addr->ss_family, SOCK_DGRAM, 0, &xdp_config)) < 0)
     {
